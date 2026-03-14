@@ -14,8 +14,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { onAuthStateChanged, User, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
-import { auth, loginWithGoogle, logout } from './firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, loginWithEmail, registerWithEmail, logout } from './firebase';
 import {
   fetchProducts,
   createProduct,
@@ -161,16 +161,25 @@ export default function App() {
     }
   };
 
-  const handleLogin = async () => {
+  // Estado para formulário de login/registro
+  const [authForm, setAuthForm] = useState({ email: '', password: '', isRegister: false });
+
+  const handleAuthFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthForm({ ...authForm, [e.target.name]: e.target.value });
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      await loginWithGoogle();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
-        return; // Utils cancelled, no action needed
+      if (authForm.isRegister) {
+        await registerWithEmail(authForm.email, authForm.password);
+        showToast('Conta criada com sucesso! Faça login.');
+        setAuthForm({ ...authForm, isRegister: false });
+      } else {
+        await loginWithEmail(authForm.email, authForm.password);
       }
-      console.error('Login error:', error);
-      showToast('Erro ao fazer login. Verifique se popups estão habilitados e tente novamente.');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Erro na autenticação.');
     }
   };
 
@@ -207,12 +216,39 @@ export default function App() {
           <p className="text-neutral-500 mb-10 leading-relaxed">
             Gerencie seu estoque de peças de informática com simplicidade e privacidade local.
           </p>
+          <form onSubmit={handleAuth} className="flex flex-col gap-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="E-mail"
+              value={authForm.email}
+              onChange={handleAuthFormChange}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Senha"
+              value={authForm.password}
+              onChange={handleAuthFormChange}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full py-4 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3"
+            >
+              {authForm.isRegister ? 'Criar conta' : 'Entrar'}
+              <ArrowRight size={18} />
+            </button>
+          </form>
           <button
-            onClick={handleLogin}
-            className="w-full py-4 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 transition-colors flex items-center justify-center gap-3"
+            type="button"
+            onClick={() => setAuthForm({ ...authForm, isRegister: !authForm.isRegister })}
+            className="mt-4 text-neutral-500 hover:underline"
           >
-            Entrar com Google
-            <ArrowRight size={18} />
+            {authForm.isRegister ? 'Já tem conta? Entrar' : 'Não tem conta? Criar conta'}
           </button>
         </motion.div>
 
