@@ -14,7 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth, loginWithGoogle, logout } from './firebase';
 import {
   fetchProducts,
@@ -57,8 +57,27 @@ export default function App() {
       setUser(currentUser);
       setIsAuthReady(true);
     });
+
+    // Processa resultado do login via redirect
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result && result.user) {
+          setUser(result.user);
+          setIsAuthReady(true);
+          showToast('Login realizado com sucesso!');
+        }
+      })
+      .catch((error) => {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
+          return;
+        }
+        console.error('Login error:', error);
+        showToast('Erro ao fazer login. Verifique se popups estão habilitados e tente novamente.');
+      });
+
     return () => unsubscribe();
-  }, []);
+  }, [showToast]);
 
   // --- Load Products ---
   const loadProducts = useCallback(async () => {
