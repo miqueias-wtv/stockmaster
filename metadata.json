@@ -1,0 +1,5 @@
+{
+  "name": "StockMaster Pro",
+  "description": "Sistema de controle de estoque minimalista para peças de computadores, notebooks e celulares.",
+  "requestFramePermissions": []
+}

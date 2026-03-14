@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Peça de reposição ou produto em estoque",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome da peça ou modelo"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["computador", "notebook", "celular", "outro"],
+          "description": "Categoria do dispositivo"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantidade em estoque"
+        },
+        "price": {
+          "type": "number",
+          "description": "Preço unitário"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "UID do usuário que criou o registro"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Data da última atualização"
+        }
+      },
+      "required": ["name", "category", "quantity", "price", "createdBy", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "Product",
+      "description": "Coleção principal de produtos em estoque"
+    }
+  }
+}
